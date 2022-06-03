@@ -10,13 +10,30 @@
 ;; Package-Requires: ((emacs "28.1"))
 
 ;;; Commentary:
-;;; Configure `efmt-format-alist' the way you want. Then, run:
+;;; Configure `efmt-format-alist' with the formatters you would like. Here's an example:
+;;;
+;;; (setq *efmt-format-alist*
+;;;   '(("el" #'my-custom-elisp-formatter)
+;;;	("js" '("prettier" "-w" "<TARGET>"))
+;;;	("go" '("gofmt" "-w" "<TARGET>"))))
+;;;
+;;; The shell commands are expected to operate on the file <TARGET> in the list. Functions
+;;; in the alist are called.
+;;;
+;;; After all of that is then set up, run:
 ;;; - M-x efmt
-;;; In the buffer you want to format.
+;;;
+;;; In the buffer you want to format. You can configure the 'after-save-hook to run efmt if
+;;; you would like as well.
 
+;;; Code:
 (defvar *efmt-format-alist*
   nil
-  "An associative list of file extensions to formatters to run.")
+  "An associative list of file extensions to formatters to run.
+Elements in the map can be:
+- A shell command as provided via a list of arguments: (e.g., '(\"gofmt\" \"-w\" \"<TARGET\"))
+- A function that can be called with no arguments (e.g., #'my-function)
+In the shell commands, <TARGET> refers to the file you want to have formatted.")
 
 (defun efmt--validate (buf-file-name)
   "Validate that we can format the current buffer."
@@ -28,13 +45,41 @@
     (or (cadr (assoc ext *efmt-format-alist*))
 	(error "Dont know how to format a %s file" ext))))
 
+(defun efmt--find-replace (file-name l)
+  "Find and replace all instances of <TARGET> in L with the provided FILE-NAME."
+  (mapcar (lambda (el) (if (string= el "<TARGET>") file-name el)) l))
+
+(defun efmt--shell-formatter (l)
+  "Format the buffer using the shell command L specifies."
+  (let* ((buffer-text (buffer-substring-no-properties 1 (buffer-size)))
+	 (extension (concat "." (file-name-extension buffer-file-name)))
+	 (cur-point (point))
+	 (buffer-file (make-temp-file "efmt" nil extension buffer-text))
+	 (temp-buf-name (concat " *" (number-to-string (random)) "*")))
+    (set-process-sentinel
+     (apply (apply-partially #'start-process "efmt" temp-buf-name)
+	    (efmt--find-replace buffer-file l))
+     (lambda (process _)
+       (when (not (= 0 (process-exit-status process)))
+	 (error "Failed to format the buffer"))
+       (erase-buffer)
+       (insert-file-contents buffer-file)
+       (goto-char cur-point) ;; Not correct, but good enough
+       (kill-buffer temp-buf-name)
+       (message "Buffer formatted successfully.")))))
+
 (defun efmt ()
   "Format the buffer, using the configuration `*efmt-format-alist' specifies."
   (interactive)
-  
-  (let ((ext (file-name-extension buffer-file-name)))
-    (unless ext
-      (error "Cannot determine extension for the current buffer."))))
+  (let ((formatter (efmt--validate buffer-file-name)))
+    (cond
+     ((listp formatter)
+      (efmt--shell-formatter formatter))
+     ((functionp formatter)
+      (funcall formatter))
+     (:otherwise
+      (print formatter)
+      (error "Invalid formatter in efmt-format-alist; check *Messages* to see the value which triggered this error")))))
 
 (provide 'efmt)
 ;;; efmt.el ends here
