@@ -8,8 +8,8 @@ Formatting is controlled via the special variable `*efmt-format-alist*` that map
 ```elisp
 (setq *efmt-format-alist*
   '(("el" #'my-custom-elisp-formatter)
-	("js" '("prettier" "-w" "<TARGET>"))
-	("go" '("gofmt" "-w" "<TARGET>"))))
+	("js" ("prettier" "-w" "<TARGET>"))
+	("go" ("gofmt" "-w" "<TARGET>"))))
 ```
 
 More formally, you'll need to create a list of lists, where:
