@@ -18,7 +18,7 @@ More formally, you'll need to create a list of lists, where:
   - A function to run.
   - A list of shell command arguments to execute on the file <TARGET>.
 
-With that set up, you can format a buffer using `M-x efmt` from inside Emacs. Note that the point probably move quite a bit in the document. You can also hook `efmt` up to an autosave hook, if you like.
+With that set up, you can format a buffer using `M-x efmt` from inside Emacs. Note that the point might move somewhere unexpected. You can also hook `efmt` up to an autosave hook, if you like.
 
 # Testing
 
