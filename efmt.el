@@ -51,7 +51,7 @@ In the shell commands, <TARGET> refers to the file you want to have formatted.")
 
 (defun efmt--shell-formatter (l)
   "Format the buffer using the shell command L specifies."
-  (let* ((buffer-text (buffer-substring-no-properties 1 (buffer-size)))
+  (let* ((buffer-text (buffer-string))
 	 (extension (concat "." (file-name-extension buffer-file-name)))
 	 (cur-point (point))
 	 (buffer-file (make-temp-file "efmt" nil extension buffer-text))
