@@ -53,20 +53,21 @@ In the shell commands, <TARGET> refers to the file you want to have formatted.")
   "Format the buffer using the shell command L specifies."
   (let* ((buffer-text (buffer-string))
 	 (extension (concat "." (file-name-extension buffer-file-name)))
-	 (cur-point (point))
 	 (buffer-file (make-temp-file "efmt" nil extension buffer-text))
 	 (temp-buf-name (concat " *" (number-to-string (random)) "*")))
     (set-process-sentinel
      (apply (apply-partially #'start-process "efmt" temp-buf-name)
 	    (efmt--find-replace buffer-file l))
      (lambda (process _)
-       (when (not (= 0 (process-exit-status process)))
-	 (error "Failed to format the buffer"))
-       (erase-buffer)
-       (insert-file-contents buffer-file)
-       (goto-char cur-point) ;; Not correct, but good enough
-       (kill-buffer temp-buf-name)
-       (message "Buffer formatted successfully.")))))
+       (if (= 0 (process-exit-status process))
+	   (let ((cur-point (point)))
+	     (erase-buffer)
+	     (insert-file-contents buffer-file)
+	     (goto-char cur-point) ;; Not correct, but good enough
+	     (kill-buffer temp-buf-name)
+	     (message "Buffer formatted successfully."))
+	 (display-buffer temp-buf-name)
+	 (message "Failed to format the buffer"))))))
 
 (defun efmt ()
   "Format the buffer, using the configuration `*efmt-format-alist' specifies."
