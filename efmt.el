@@ -40,9 +40,9 @@ In the shell commands, <TARGET> refers to the file you want to have formatted.")
   "Validate that we can format the current buffer."
   (unless buf-file-name
     (error "There is no file associated with the current buffer; cannot format."))
-  (let ((ext (or (file-name-extension buf-file-name) major-mode)))
-    (or (cadr (assoc ext *efmt-format-alist*))
-	(error "Dont know how to format %s" buf-file-name))))
+  (or (cadr (assoc (file-name-extension buf-file-name) *efmt-format-alist*))
+      (cadr (assoc major-mode *efmt-format-alist*))
+      (error "Dont know how to format %s" buf-file-name)))
 
 (defun efmt--find-replace (file-name l)
   "Find and replace all instances of <TARGET> in L with the provided FILE-NAME."
