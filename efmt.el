@@ -15,6 +15,7 @@
 ;;; (setq *efmt-format-alist*
 ;;;   '(("el" #'my-custom-elisp-formatter)
 ;;;	("js" '("prettier" "-w" "<TARGET>"))
+;;;     (ruby-mode '("rufo" "<TARGET>"))
 ;;;	("go" '("gofmt" "-w" "<TARGET>"))))
 ;;;
 ;;; The shell commands are expected to operate on the file <TARGET> in the list. Functions
