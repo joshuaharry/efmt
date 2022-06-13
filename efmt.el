@@ -39,11 +39,9 @@ In the shell commands, <TARGET> refers to the file you want to have formatted.")
   "Validate that we can format the current buffer."
   (unless buf-file-name
     (error "There is no file associated with the current buffer; cannot format."))
-  (let ((ext (file-name-extension buf-file-name)))
-    (unless ext
-      (error "There is no extension associated with the current file; cannot format."))
+  (let ((ext (or (file-name-extension buf-file-name) major-mode)))
     (or (cadr (assoc ext *efmt-format-alist*))
-	(error "Dont know how to format a %s file" ext))))
+	(error "Dont know how to format %s" buf-file-name))))
 
 (defun efmt--find-replace (file-name l)
   "Find and replace all instances of <TARGET> in L with the provided FILE-NAME."
@@ -78,9 +76,8 @@ In the shell commands, <TARGET> refers to the file you want to have formatted.")
       (efmt--shell-formatter formatter))
      ((functionp formatter)
       (funcall formatter))
-     (:otherwise
-      (print formatter)
-      (error "Invalid formatter in efmt-format-alist; check *Messages* to see the value which triggered this error")))))
+     (t (print formatter)
+	(error "Invalid formatter in efmt-format-alist; check *Messages* to see the value which triggered this error")))))
 
 (provide 'efmt)
 ;;; efmt.el ends here
