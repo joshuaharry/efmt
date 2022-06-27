@@ -14,12 +14,12 @@ Formatting is controlled via the special variable `*efmt-format-alist*` that map
   ("go" ("gofmt" "-w" "<TARGET>"))))
 ```
 
-More formally, you'll need to create a list of lists, where:
+More formally, you'll need to create a list of lists with the following structure:
 
-- The first element is a string that is the file extension or a major mode.
+- The first element is a string that is the file extension or a symbol that is the major mode.
 - The second element is either:
   - A function to run.
-  - A list of shell command arguments to execute on the file <TARGET>.
+  - A list of shell command arguments to execute on the file `<TARGET>`.
 
 If you have two different formatters in the list that could apply to a file based on both its major mode and its extension, the one associated with the file extension will win.
 
